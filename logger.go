@@ -25,11 +25,15 @@ func initEncoder(c *LogConfig) (zapcore.Encoder, zapcore.Encoder) {
 	fileEncoder := zapcore.NewConsoleEncoder(fileEncoderConfig)
 
 	if c.ConsoleJson {
-		log.Print("JSON output enabled for ConsoleJson")
+		if c.Level == "debug" {
+			log.Print("JSON output enabled for ConsoleJson")
+		}
 		consoleEncoder = zapcore.NewJSONEncoder(consoleEncoderConfig)
 	}
 	if c.FileJson {
-		log.Print("JSON output enabled for FileJson")
+		if c.Level == "debug" {
+			log.Print("JSON output enabled for FileJson")
+		}
 		fileEncoder = zapcore.NewJSONEncoder(fileEncoderConfig)
 	}
 
@@ -45,11 +49,15 @@ func initZapLog(logLevel zapcore.Level, c *LogConfig) *zap.Logger {
 	var cores []zapcore.Core
 
 	if c.ConsoleEnabled {
-		log.Print("Console logging is enabled")
+		if c.Level == "debug" {
+			log.Print("Console logging is enabled")
+		}
 		cores = append(cores, zapcore.NewCore(consoleEncoder, zapcore.Lock(os.Stderr), logLevel))
 	}
 	if c.FileEnabled {
-		log.Print("File logging is enabled")
+		if c.Level == "debug" {
+			log.Print("File logging is enabled")
+		}
 		cores = append(cores, zapcore.NewCore(fileEncoder, lumberjackSink{Logger: &ll}, logLevel))
 	}
 	core := zapcore.NewTee(cores...)
@@ -60,7 +68,9 @@ func initZapLog(logLevel zapcore.Level, c *LogConfig) *zap.Logger {
 }
 
 func Init(c *LogConfig) {
-	zap.S().Debug("initializing logger")
+	if c.Level == "debug" {
+		log.Print("initializing logger")
+	}
 	logLevel := getLogLevel(c.Level)
 	logManager := initZapLog(logLevel, c)
 
